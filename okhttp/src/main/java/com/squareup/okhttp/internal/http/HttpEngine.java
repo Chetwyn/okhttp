@@ -728,7 +728,9 @@ public final class HttpEngine {
       }
     }
 
-    return cached.newBuilder().headers(result.build()).build();
+    return cached.newBuilder()
+        .headers(result.build())
+        .build();
   }
 
   /**

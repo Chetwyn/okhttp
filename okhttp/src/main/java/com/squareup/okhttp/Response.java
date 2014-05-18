@@ -40,6 +40,8 @@ public final class Response {
   private final Handshake handshake;
   private final Headers headers;
   private final ResponseBody body;
+  private final Response cacheResponse;
+  private final Response validationResponse;
   private final Response priorResponse;
 
   private volatile CacheControl cacheControl; // Lazily initialized.
@@ -52,6 +54,8 @@ public final class Response {
     this.handshake = builder.handshake;
     this.headers = builder.headers.build();
     this.body = builder.body;
+    this.cacheResponse = builder.cacheResponse;
+    this.validationResponse = builder.validationResponse;
     this.priorResponse = builder.priorResponse;
   }
 
@@ -137,10 +141,27 @@ public final class Response {
   }
 
   /**
+   * Returns the cached response that was used to produce this response, or null
+   * if this response did not require a cache. The body of the returned response
+   * cannot be read.
+   */
+  public Response cacheResponse() {
+    return cacheResponse;
+  }
+
+  /**
+   * Returns the network response that was used to validate the cache, or null
+   * if this response was not cached, or if the cache did not require network
+   * validation. The body of the returned response cannot be read.
+   */
+  public Response validationResponse() {
+    return validationResponse;
+  }
+
+  /**
    * Returns the response for the HTTP redirect or authorization challenge that
    * triggered this response, or null if this response wasn't triggered by an
-   * automatic retry. The body of the returned response should not be read
-   * because it has already been consumed by the redirecting client.
+   * automatic retry. The body of the returned response cannot be read.
    */
   public Response priorResponse() {
     return priorResponse;
@@ -194,6 +215,8 @@ public final class Response {
     private Handshake handshake;
     private Headers.Builder headers;
     private ResponseBody body;
+    private Response cacheResponse;
+    private Response validationResponse;
     private Response priorResponse;
 
     public Builder() {
@@ -273,6 +296,16 @@ public final class Response {
     // TODO: move out of public API
     public Builder setResponseSource(ResponseSource responseSource) {
       return header(OkHeaders.RESPONSE_SOURCE, responseSource + " " + code);
+    }
+
+    public Builder cacheResponse(Response cacheResponse) {
+      this.cacheResponse = cacheResponse;
+      return this;
+    }
+
+    public Builder validationResponse(Response validationResponse) {
+      this.validationResponse = validationResponse;
+      return this;
     }
 
     public Builder priorResponse(Response priorResponse) {

@@ -15,6 +15,9 @@
  */
 package com.squareup.okhttp;
 
+import java.net.URL;
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -35,13 +38,23 @@ public class RecordedResponse {
     this.failure = failure;
   }
 
+  public RecordedResponse assertRequestUrl(URL url) {
+    assertEquals(url, request.url());
+    return this;
+  }
+
+  public RecordedResponse assertRequestHeader(String name, String... values) {
+    assertEquals(Arrays.asList(values), request.headers(name));
+    return this;
+  }
+
   public RecordedResponse assertCode(int expectedCode) {
     assertEquals(expectedCode, response.code());
     return this;
   }
 
-  public RecordedResponse assertHeader(String name, String value) {
-    assertEquals(value, response.header(name));
+  public RecordedResponse assertHeader(String name, String... values) {
+    assertEquals(Arrays.asList(values), response.headers(name));
     return this;
   }
 
@@ -64,11 +77,34 @@ public class RecordedResponse {
    * Asserts that the current response was redirected and returns a new recorded
    * response for the original request.
    */
-  public RecordedResponse redirectedBy() {
-    Response redirectedBy = response.priorResponse();
-    assertNotNull(redirectedBy);
-    assertNull(redirectedBy.body());
-    return new RecordedResponse(redirectedBy.request(), redirectedBy, null, null);
+  public RecordedResponse priorResponse() {
+    Response priorResponse = response.priorResponse();
+    assertNotNull(priorResponse);
+    assertNull(priorResponse.body());
+    return new RecordedResponse(priorResponse.request(), priorResponse, null, null);
+  }
+
+  /**
+   * Asserts that the current response consulted the cache and returns a new
+   * recorded response for the cached response.
+   */
+  public RecordedResponse cacheResponse() {
+    Response cacheResponse = response.cacheResponse();
+
+    assertNotNull(cacheResponse);
+    assertNull(cacheResponse.body());
+    return new RecordedResponse(cacheResponse.request(), cacheResponse, null, null);
+  }
+
+  /**
+   * Asserts that the current response was validated by the cache and returns a
+   * new recorded response for the validation response.
+   */
+  public RecordedResponse validationResponse() {
+    Response validationResponse = response.validationResponse();
+    assertNotNull(validationResponse);
+    assertNull(validationResponse.body());
+    return new RecordedResponse(validationResponse.request(), validationResponse, null, null);
   }
 
   public void assertFailure(String message) {

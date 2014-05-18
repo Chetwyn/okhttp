@@ -173,7 +173,7 @@ public final class CacheStrategy {
     private CacheStrategy getCandidate() {
       // No cached response.
       if (cacheResponse == null) {
-        return new CacheStrategy(request, cacheResponse, ResponseSource.NETWORK);
+        return new CacheStrategy(request, null, ResponseSource.NETWORK);
       }
 
       // Drop the cached response if it's missing a required handshake.
